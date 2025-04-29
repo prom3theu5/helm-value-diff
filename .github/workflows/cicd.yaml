@@ -44,5 +44,5 @@ jobs:
         with:
           token: ${{ secrets.HOMEBREW_TAP_PAT }}
           repository: prom3theu5/homebrew-tap
-          event-type: bump-formula-helm-value-diff
+          event-type: bump-formula-helm-values-diff
           client-payload: '{ "version": "${{ github.ref_name }}" }'
