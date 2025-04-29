@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Build binaries
+        run: |
+          mkdir -p dist
+
+          LDFLAGS="-s -w \
+            -X github.com/prom3theu5/helm-values-diff/internal/meta.Version=${{ github.ref_name }} \
+            -X github.com/prom3theu5/helm-values-diff/internal/meta.Commit=${{ github.sha }} \
+            -X github.com/prom3theu5/helm-values-diff/internal/meta.Date=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+          GOOS=darwin GOARCH=arm64 go build -ldflags="$LDFLAGS" -o dist/helm-values-diff-darwin-arm64
+          GOOS=darwin GOARCH=amd64 go build -ldflags="$LDFLAGS" -o dist/helm-values-diff-darwin-amd64
+          GOOS=linux GOARCH=amd64 go build -ldflags="$LDFLAGS" -o dist/helm-values-diff-linux-amd64
+          GOOS=windows GOARCH=amd64 go build -ldflags="$LDFLAGS" -o dist/helm-values-diff-windows-amd64.exe
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/helm-values-diff-*
+
+      - name: Notify Homebrew tap repo
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.HOMEBREW_TAP_PAT }}
+          repository: prom3theu5/homebrew-tap
+          event-type: bump-homebrew
+          client-payload: '{ "tag": "${{ github.ref_name }}" }'
