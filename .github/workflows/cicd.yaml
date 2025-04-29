@@ -35,10 +35,9 @@ jobs:
       - name: Upload release assets
         uses: softprops/action-gh-release@v2
         with:
+          token: ${{ secrets.GH_RELEASE_PAT }}
           files: |
             dist/helm-values-diff-*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_PAT }}
 
       - name: Notify Homebrew tap repo
         uses: peter-evans/repository-dispatch@v3
