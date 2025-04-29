@@ -37,6 +37,8 @@ jobs:
         with:
           files: |
             dist/helm-values-diff-*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_RELEASE_PAT }}
 
       - name: Notify Homebrew tap repo
         uses: peter-evans/repository-dispatch@v3
